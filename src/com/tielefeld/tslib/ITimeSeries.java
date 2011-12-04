@@ -19,4 +19,5 @@ public interface ITimeSeries<T> {
 	public List<ITimeSeriesPoint<T>> getPoints();
 	public int getCapacity();
 	public int size();
+	public Date getEndTime();
 }
