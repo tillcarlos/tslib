@@ -1,15 +1,12 @@
 package com.tielefeld.tslib.forecast.ses;
 
-import org.rosuda.JRI.REXP;
+import java.util.List;
 
-import avh.informatik.cau.REngineFacade;
-import avh.informatik.cau.REngineFacadeEvalException;
-
+import com.tielefeld.rbridge.RBridgeControl;
 import com.tielefeld.tslib.ITimeSeries;
 import com.tielefeld.tslib.ITimeSeriesPoint;
 import com.tielefeld.tslib.forecast.AbstractForecaster;
 import com.tielefeld.tslib.forecast.IForecastResult;
-import com.tielefeld.tslib.forecast.mean.MeanForecastResult;
 
 public class SESRForecaster extends AbstractForecaster<Double> {
 
@@ -23,30 +20,50 @@ public class SESRForecaster extends AbstractForecaster<Double> {
 		ITimeSeries<Double> tsFC = super.prepareForecastTS();
 		
 
-		REngineFacade r = REngineFacade.getInstance();
 		double[] values = new double[history.size()];
 		int i = 0;
 		for(ITimeSeriesPoint<Double> point : history.getPoints()){
-			values[0] = point.getValue();
+			values[i] = point.getValue();
+			i++;
 		}
-		r.assign("values", values);
-		try {
-			r.rEvalSync("ses <- HoltWinters(times, beta = FALSE, gamma = FALSE");
-			REXP result = r.rEvalSync("predict(ses, " + n + ", prediction.interval = TRUE)");
-		} catch (REngineFacadeEvalException e) {
-			e.printStackTrace();
-		}
+		
+		
+		RBridgeControl rBridge = RBridgeControl.getInstance();
+		rBridge.e("initTS()");
+		rBridge.assign("ts_history", values);
+		double[] pred = rBridge.eDblArr("getForecast(ts_history)");
 
-		
-		// For now, do the calculation in Java here
-		double sum = 0.0;
-		for (ITimeSeriesPoint<Double> point : history.getPoints()) {
-			sum += point.getValue();
-		}
-		
+		tsFC.append(pred[0]);
 		return new SESForecastResult(tsFC);
 	}
 
 
 
 }
+
+
+/*
+This was the intention to do it (with avh's code)
+
+r.loadLibrary("tseries");
+r.loadLibrary("stats");
+
+r.assign("points", values);
+
+try {
+	Thread.sleep(1300);
+} catch (InterruptedException e1) {
+	// TODO Auto-generated catch block
+	e1.printStackTrace();
+}
+
+try {
+//	REXP hwResult = r.rEvalSync("ses <- HoltWinters(points, beta = FALSE, gamma = FALSE)");
+	REXP hwResult = r.rEvalSync("HoltWinters");
+	r.assign("ses", hwResult);
+	REXP result = r.rEvalSync("predict(ses, " + n + ", prediction.interval = TRUE)");
+} catch (REngineFacadeEvalException e) {
+	e.printStackTrace();
+}
+
+*/

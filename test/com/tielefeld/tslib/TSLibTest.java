@@ -12,7 +12,7 @@ public class TSLibTest {
 	public void testForecastFacadeMeanOneStep() {
 //		TimeSeries<Double> ts = new TimeSeries<T>(0, 1, TimeUnit.DAYS);
 //		TSLib.forecast(ts, )
-		fail("Do we really need this facade?!");
+//		fail("Do we really need this facade?!");
 			
 	}
 

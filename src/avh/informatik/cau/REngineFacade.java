@@ -48,6 +48,8 @@ public class REngineFacade {
 
     private final Rengine rEngine;
 
+    private String libLocPath = "/Library/Frameworks/R.framework/Versions/2.14/Resources/library";
+    
     private REngineFacade() throws IllegalArgumentException {
         this.rEngine = this.initREngine();
     }
@@ -63,6 +65,18 @@ public class REngineFacade {
                 new String[]{"--vanilla"},
                 false,
                 new TextConsole());
+        // TODO debug stuff of tielefeld
+//        System.out.println("==============");
+//        System.out.println(re.eval(".libPaths(\"/Library/Frameworks/R.framework/Versions/2.14/Resources/library\") "));
+//        System.out.println(re.eval("library(\"stats\", lib.loc=\""+libLocPath+"\")"));
+//        System.out.println(re.eval("library(\"stats\")"));
+//        System.out.println(re.eval(".libPaths() "));
+//        System.out.println(re.eval("HoltWinters"));
+//        System.out.println("==============");
+//        System.out.println(re.eval("a <- 666"));
+//        System.out.println(re.eval("sessionInfo() "));
+//        System.out.println("==============");
+        
         REngineFacade.log.info("Rengine created, waiting for R");
         if (!re.waitForR()) {
             REngineFacade.log.error("Cannot load R");
@@ -75,6 +89,15 @@ public class REngineFacade {
     public static final REngineFacade getInstance() {
         return LazyHolder.INSTANCE;
     }
+    
+    public static final REngineFacade getInstance(String libLoc) {
+    	LazyHolder.INSTANCE.setLibLoc(libLoc);
+    	return LazyHolder.INSTANCE;
+    }
+
+	private void setLibLoc(String libLoc) {
+		this.libLocPath = libLoc;
+	}
 
 	/**
 	 * SINGLETON
@@ -97,7 +120,7 @@ public class REngineFacade {
      * This method returns immediately. The result is passed to the
      * caller via the callback handler.
      */
-    protected final void rEvalAsync(final String rCmd, final IREvalCallbackHandler resultHandler) {
+    public final void rEvalAsync(final String rCmd, final IREvalCallbackHandler resultHandler) {
         this.jobQueue.submit(new RCallable(rCmd, resultHandler));
     }
 
@@ -121,7 +144,7 @@ public class REngineFacade {
      * @param sym
      * @param content
      */
-    protected final void assign (final String sym, final String content) {
+    public final void assign (final String sym, final String content) {
     	this.rEngine.assign(sym, content);
     }
     
@@ -131,7 +154,7 @@ public class REngineFacade {
      * @param sym
      * @param r
      */
-    protected final void assign (final String sym, final REXP r) {
+    public final void assign (final String sym, final REXP r) {
     	this.rEngine.assign(sym, r);
     }
     
@@ -151,7 +174,7 @@ public class REngineFacade {
      * @param sym
      * @param val
      */
-    protected final void assign (final String sym, final int[] val) {
+    public final void assign (final String sym, final int[] val) {
     	this.rEngine.assign(sym, val);
     }
     
@@ -161,7 +184,7 @@ public class REngineFacade {
      * @param sym
      * @param val
      */
-    protected final void assign (final String sym, final boolean[] val) {
+    public final void assign (final String sym, final boolean[] val) {
     	this.rEngine.assign(sym, val);
     }
     
@@ -171,8 +194,18 @@ public class REngineFacade {
      * @param sym
      * @param val
      */
-    protected final void assign (final String sym, final String[] val) {
+    public final void assign (final String sym, final String[] val) {
     	this.rEngine.assign(sym, val);
+    }
+    
+    /**
+     * TODO: use jobQueue
+     * 
+     * @param sym
+     * @param val
+     */
+    public final void loadLibrary (final String libname) {
+    	this.rEngine.eval("library("+libname+" lib.loc="+ libLocPath + ")");
     }
     
     public final void test() throws REngineFacadeEvalException {

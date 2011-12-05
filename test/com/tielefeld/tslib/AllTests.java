@@ -8,7 +8,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ TimeSeriesTest.class,
 		com.tielefeld.tslib.forecast.MeanForecasterTest.class, 
 		com.tielefeld.tslib.forecast.SESRForecasterTest.class, 
-		avh.informatik.cau.REngineFacadeTest.class, 
+		//avh.informatik.cau.REngineFacadeTest.class, 
 		TSLibTest.class })
 public class AllTests {
 
