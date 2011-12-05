@@ -1,0 +1,16 @@
+README
+======
+
+Some general instructions to get the library running. This document will improve over time.
+Thanks for using tslib!
+
+rJAVA
+=====
+Running rJava in mac OSX Lion via command line:
+java -cp bin:lib/* -Djava.library.path=lib avh.informatik.cau.REngineFacadeTest
+
+In eclipse: Set the variable acccordingly. It is _not_ sufficient to do a System.setProperty!
+
+
+
+
