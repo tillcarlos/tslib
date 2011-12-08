@@ -1,14 +1,15 @@
 package avh.informatik.cau;
 
-import static org.junit.Assert.assertEquals;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.Rengine;
 import org.rosuda.REngine.JRI.JRIEngine;
 
 public class REngineFacadeTest {
+    private static final Log log = LogFactory.getLog(REngineFacadeTest.class);
 
 	private REngineFacade r;
 
@@ -25,74 +26,85 @@ public class REngineFacadeTest {
 		System.out.println("R_DOC_DIR="+System.getenv("R_DOC_DIR"));
 		System.out.println("R_LIBS_USER="+System.getenv("R_LIBS_USER"));
 
-		r = REngineFacade.getInstance();
+		this.r = REngineFacade.getInstance();
 
 	}
 
 	@Test
 	public void testSimpleEval() {
 
-		r.assign("values", new double[] { 0.1, 0.2, 0.3 });
-		r.rEvalAsync("sum(values)", new IREvalCallbackHandler() {
+		this.r.assign("values", new double[] { 0.1, 0.2, 0.3 });
+		this.r.rEvalAsync("sum(values)", new IREvalCallbackHandler() {
 
 			@Override
-			public void newREXP(REXP rExp) {
+			public void newREXP(final REXP rExp) {
 				System.out.println(" " + rExp);
-				assertEquals(0.6, rExp.getContent());
+				Assert.assertEquals(0.6, rExp.getContent());
 			}
 		});
 
 	}
 	
 	@Test
+	public void testHoltWinters() throws REngineFacadeEvalException {
+		
+		System.out.println("Begin HoltWinter ...");
+		this.r.loadLibrary("graphics");
+		System.out.println(this.r.rEvalSync("hw=HoltWinters(co2)").getContent());
+		System.out.println(this.r.rEvalSync("hw$a").asDouble());
+		System.out.println(this.r.rEvalSync("5").asDouble());
+		System.out.println("End HoltWinter ...");
+	}
+	
+	@Test
 	public void testLoadingLibraries() {
 
-		REngineFacade r2 = REngineFacade.getInstance("/Library/Frameworks/R.framework/Versions/2.14/Resources/library");
+		final REngineFacade r2 = REngineFacade.getInstance("/Library/Frameworks/R.framework/Versions/2.14/Resources/library");
 		r2.loadLibrary("tseries");
 		
 		System.out.println(">>>>");
-		r.rEvalAsync(".libPaths(\"/Library/Frameworks/R.framework/Versions/2.14/Resources/library\")", new IREvalCallbackHandler() {
+		this.r.rEvalAsync(".libPaths(\"/Library/Frameworks/R.framework/Versions/2.14/Resources/library\")", new IREvalCallbackHandler() {
 			
 			@Override
-			public void newREXP(REXP rExp) {
+			public void newREXP(final REXP rExp) {
 				System.out.println(".libPaths(..path...)) >> " + rExp);
 			}
 		});
 		
 		try {
 			Thread.sleep(1000);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		r.rEvalAsync(".libPaths()", new IREvalCallbackHandler() {
+		this.r.rEvalAsync(".libPaths()", new IREvalCallbackHandler() {
 			
 			@Override
-			public void newREXP(REXP rExp) {
+			public void newREXP(final REXP rExp) {
 				System.out.println(".libPaths()) >> " + rExp);
 			}
 		});
 		
-		r.rEvalAsync("library(tseries)", new IREvalCallbackHandler() {
+		this.r.rEvalAsync("library(tseries)", new IREvalCallbackHandler() {
 			
 			@Override
-			public void newREXP(REXP rExp) {
+			public void newREXP(final REXP rExp) {
 				System.out.println("library(tse... >> " + rExp);
 			}
 		});
 		
 		try {
 			Thread.sleep(1000);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		r.rEvalAsync("(.packages())", new IREvalCallbackHandler() {
+		this.r.rEvalAsync("(.packages())", new IREvalCallbackHandler() {
 
 			@Override
-			public void newREXP(REXP rExp) {
+			public void newREXP(final REXP rExp) {
 				System.out.println("(.packages()) >> " + rExp);
 			}
 		});
@@ -100,7 +112,7 @@ public class REngineFacadeTest {
 		
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		try {
 			JRIEngine re;  
 			try{ 
@@ -115,17 +127,17 @@ public class REngineFacadeTest {
 //	        System.out.println(re.eval("HoltWinters"));
 			    System.out.println("==============");
 			}
-			catch(Exception e){
+			catch(final Exception e){
 				e.printStackTrace();
 			} 
 			
 	        
-			REngineFacadeTest test = new REngineFacadeTest();
+			final REngineFacadeTest test = new REngineFacadeTest();
 			test.setUp();
-//			test.testSimpleEval();
+			test.testSimpleEval();
 //			test.testLoadingLibraries();
 			
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

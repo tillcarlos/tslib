@@ -6,12 +6,11 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="var" path="LD_LIBRARY_PATH"/>
 	<classpathentry kind="lib" path="lib/JRI.jar"/>
 	<classpathentry kind="lib" path="lib/JRIEngine.jar"/>
 	<classpathentry kind="lib" path="lib/REngine.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/lib"/>
 	<classpathentry kind="lib" path="lib/Rsession.jar"/>
 	<classpathentry kind="lib" path="lib/Rserve.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="build-eclipse"/>
 </classpath>
