@@ -5,11 +5,15 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ TimeSeriesTest.class,
+@SuiteClasses({ 
+		com.tielefeld.tslib.TimeSeriesTest.class,
 		com.tielefeld.tslib.forecast.MeanForecasterTest.class, 
 		com.tielefeld.tslib.forecast.SESRForecasterTest.class, 
+		com.tielefeld.tslib.TimeSeriesTest.class, 
+		com.tielefeld.tslib.TSLibTest.class, 
 		//avh.informatik.cau.REngineFacadeTest.class, 
-		TSLibTest.class })
-public class AllTests {
+		
+})
+public class AllTSLibTests {
 
 }

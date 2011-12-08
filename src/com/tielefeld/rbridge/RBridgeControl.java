@@ -64,7 +64,7 @@ public class RBridgeControl {
 		Object out = null;
 		try {
 			out = this.rCon.eval(input);
-			// LOG.info("> REXP: " + input + " return: " + out);
+			 LOG.info("> REXP: " + input + " return: " + out);
 		} catch (Exception exc) {
 			LOG.error("Error R expr.: " + input + " Cause: " + exc);
 			exc.printStackTrace();
@@ -123,6 +123,32 @@ public class RBridgeControl {
 		
 	}
 
+	public void assign(String variable, Double[] values) {
+		try {
+			StringBuffer buf = new StringBuffer();
+			buf.append(variable + " <<- c(");
+			boolean first = true;
+			for (Double item : values) {
+				if (!first) {
+					buf.append(",");
+				} else {
+					first = false;
+				}
+				if (null == item) {
+					buf.append("NA");
+				} else {
+					buf.append(item);
+				}
+			}
+			buf.append(")");
+			this.e(buf.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+				
+	}
+
+	
 
 }
 
