@@ -47,7 +47,7 @@ public class MeanForecasterTest {
 		ts.append(mean + 1);
 		forecaster = new MeanForecaster(ts);
 		forecast = forecaster.forecast(steps);
-		forecastSeries = forecast.getForecastTimeSeries();
+		forecastSeries = forecast.getForecast();
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class MeanForecasterTest {
 
 		assertEquals(steps, forecastSeries.size());
 
-		ITimeSeriesPoint<Double> stepFC = forecast.getForecastTimeSeries()
+		ITimeSeriesPoint<Double> stepFC = forecast.getForecast()
 				.getPoints().get(0);
 		assertEquals(mean, stepFC.getValue());
 	}
