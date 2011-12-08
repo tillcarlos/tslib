@@ -90,12 +90,12 @@ public class REngineFacade {
         return LazyHolder.INSTANCE;
     }
     
-    public static final REngineFacade getInstance(String libLoc) {
+    public static final REngineFacade getInstance(final String libLoc) {
     	LazyHolder.INSTANCE.setLibLoc(libLoc);
     	return LazyHolder.INSTANCE;
     }
 
-	private void setLibLoc(String libLoc) {
+	private void setLibLoc(final String libLoc) {
 		this.libLocPath = libLoc;
 	}
 
@@ -205,7 +205,7 @@ public class REngineFacade {
      * @param val
      */
     public final void loadLibrary (final String libname) {
-    	this.rEngine.eval("library("+libname+" lib.loc="+ libLocPath + ")");
+    	this.rEngine.eval("library("+libname+" lib.loc="+ this.libLocPath + ")");
     }
     
     public final void test() throws REngineFacadeEvalException {
@@ -232,6 +232,7 @@ public class REngineFacade {
         	REngineFacade.log.info("LD_LIBRARY_PATH="+System.getenv("LD_LIBRARY_PATH"));
         	REngineFacade.log.info("java.library.path=" + System.getProperty("java.library.path"));
             final REngineFacade rFacade = REngineFacade.getInstance();
+                        
             rFacade.test();
             //rFacade.end();
         } catch (final Exception exc) {

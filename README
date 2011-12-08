@@ -11,6 +11,9 @@ java -cp bin:lib/* -Djava.library.path=lib avh.informatik.cau.REngineFacadeTest
 
 In eclipse: Set the variable acccordingly. It is _not_ sufficient to do a System.setProperty!
 
+Alternatively, you can set the LD_LIBRARY_PATH accordingly, as described in
+REngineFacade. 
+
 
 
 

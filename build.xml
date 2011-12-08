@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Opad4lsssExperiments" default="build-all" basedir=".">
+	<property file="build.xml.properties" />
+
+	<!-- Compile classpaths used for javac and javadoc -->
+	<target name="init-classpaths">
+		<path id="compile-classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+
+		<path id="run-classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+			<pathelement location="${opad.jar.file}" />
+		</path>
+
+		<path id="compile-tests-classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+			<pathelement location="${opad.jar.file}" />
+		</path>
+
+		<path id="run-tests-classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+			<pathelement location="${opad.build.test.dir}/" />
+			<pathelement location="${opad.jar.file}" />
+		</path>
+	</target>
+	
+	<target name="init" depends="init-classpaths">
+		<mkdir dir="${build.main.dir}" />
+		<mkdir dir="${build.test.dir}" />
+		<mkdir dir="${tmp.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<antcall target="init-opad" />
+	</target>
+	
+	<target name="build-all" depends="clean,init,build-opad">
+	</target>
+
+	<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" />
+
+	<target name="run-tests-junit" depends="build-all">
+		<delete dir="${tests.junit-results.dir}" />
+		<mkdir dir="${tests.junit-results.dir}" />
+
+		<junit printsummary="yes" haltonfailure="no">
+			<classpath refid="run-tests-classpath" />
+
+			<formatter type="xml" />
+
+			<batchtest fork="yes" todir="${tests.junit-results.dir}">
+				<fileset dir="${opad.build.test.dir}/">
+					<include name="**/junit/**/*Test*.class" />
+					<exclude name="**/*$*.class" />
+					<exclude name="**/Abstract*.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+
+		<antcall target="test.junit.report" />
+	</target>
+	
+	<target name="test.junit.report" depends="">
+		<junitreport todir="${tests.junit-results.dir}">
+			<fileset dir="${tests.junit-results.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${tests.junit-results.dir}" />
+		</junitreport>
+
+		<echo message="To see the test report, open ${tests.junit-results.dir}/index.html in your Web browser." />
+	</target>
+
+	<target name="clean">
+		<!-- <delete dir="tmp"/>-->
+		<delete dir="${dist.dir}" />
+		<delete dir="${build.dir}" />
+	</target>
+	
+	<target name="init-opad">
+		<mkdir dir="${opad.build.main.dir}" />
+		<mkdir dir="${opad.build.test.dir}" />
+	</target>
+	
+	<target name="build-opad" depends="clean, init">
+	
+		<!-- compile all sources 
+		     (TODO: workaround as long as there is a (cyclic) dependency between meta-model and framework) -->
+		<javac destDir="${opad.build.main.dir}" source="1.5" debug="true" classpathref="compile-classpath">
+			<!--<src path="${opad.src-gen.dir}"/>-->
+			<src path="${opad.src.dir}"/>
+			<compilerarg value="-Xlint:-path" />
+		</javac>
+
+		<!-- TODO: re-activate as soon as dependency meta-model->framework resolved -->
+		<!-- compile generated sources -->
+		<!--<javac destDir="${opad.build.main.dir}" source="1.5" srcdir="${opad.src-gen.dir}" debug="true" classpathref="compile-classpath">
+			<compilerarg value="-Xlint:-path" />
+		</javac>-->
+	
+		<!-- compile main sources -->
+		<!--<javac destDir="${opad.build.main.dir}" source="1.5" srcdir="${opad.src.dir}" debug="true" classpathref="compile-classpath">
+			<compilerarg value="-Xlint:-path" />
+		</javac>-->
+
+		<mkdir dir="${opad.build.main.dir}/META-INF" />
+
+		<!-- include libs in jar and set classpath in MANIFEST file -->
+		<!-- TODO: Note the jars build in this way can only be executed using 
+		           java -jar from directories with the subdirectory lib/ including 
+		           the required jars. We will have to find a solution such as 
+		           OneJar for this in the future -->
+		<mkdir dir="${opad.build.main.dir}/lib" />
+		<copy todir="${opad.build.main.dir}/lib/">
+			<fileset dir="lib/">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<path id="build-classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+
+		<!-- excludes test classses since they haven't been built so far -->
+		<jar destfile="${opad.jar.file}" basedir="${opad.build.main.dir}">
+		</jar>
+
+		<!-- compile tests -->
+		<javac source="1.5" destDir="${opad.build.test.dir}" classpathref="compile-tests-classpath">
+			<src path="${opad.test.dir}"/>
+		</javac>
+	</target>
+</project>
