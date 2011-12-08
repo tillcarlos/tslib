@@ -7,22 +7,25 @@ import com.tielefeld.tslib.forecast.IForecastResult;
 
 public class MeanForecaster extends AbstractForecaster<Double> {
 
-	public MeanForecaster(ITimeSeries<Double> historyTimeseries) {
+	public MeanForecaster(final ITimeSeries<Double> historyTimeseries) {
 		super(historyTimeseries);
 	}
 
 	@Override
-	public IForecastResult<Double> forecast(int numForecastSteps) {
-		ITimeSeries<Double> history = this.getHistoryTimeSeries();
-		ITimeSeries<Double> tsFC = this.prepareForecastTS();
+	public IForecastResult<Double> forecast(final int numForecastSteps) {
+		final ITimeSeries<Double> history = this.getHistoryTimeSeries();
+		final ITimeSeries<Double> tsFC = this.prepareForecastTS();
 		
 		
 		// For now, do the calculation in Java here
 		double sum = 0.0;
-		for (ITimeSeriesPoint<Double> point : history.getPoints()) {
+		for (final ITimeSeriesPoint<Double> point : history.getPoints()) {
 			sum += point.getValue();
 		}
-		double mean = sum / history.size();
+		final double mean = sum / history.size();
+		
+		
+		
 		for (int i = 0; i < numForecastSteps; i++) {
 			tsFC.append(mean);
 		} 
