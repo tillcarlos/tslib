@@ -1,44 +1,34 @@
 package com.tielefeld.tslib.forecast.ses;
 
-import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
 
 import com.tielefeld.rbridge.RBridgeControl;
 import com.tielefeld.tslib.ITimeSeries;
-import com.tielefeld.tslib.ITimeSeriesPoint;
 import com.tielefeld.tslib.forecast.AbstractForecaster;
+import com.tielefeld.tslib.forecast.ForecastResult;
 import com.tielefeld.tslib.forecast.IForecastResult;
 
 public class SESRForecaster extends AbstractForecaster<Double> {
 
-	public SESRForecaster(ITimeSeries<Double> historyTimeseries) {
+	public SESRForecaster(final ITimeSeries<Double> historyTimeseries) {
 		super(historyTimeseries);
 	}
 
 	@Override
-	public IForecastResult<Double> forecast(int n) {
-		ITimeSeries<Double> history = this.getHistoryTimeSeries();
-		ITimeSeries<Double> tsFC = super.prepareForecastTS();
+	public IForecastResult<Double> forecast(final int n) {
+		final ITimeSeries<Double> history = this.getTsOriginal();
+		final ITimeSeries<Double> tsFC = super.prepareForecastTS();
 		
-
-		double[] values = new double[history.size()];
-		int i = 0;
-		for(ITimeSeriesPoint<Double> point : history.getPoints()){
-			values[i] = point.getValue();
-			i++;
-		}
-		
-		
-		RBridgeControl rBridge = RBridgeControl.getInstance();
+		final double[] values = ArrayUtils.toPrimitive(history.getValues().toArray(new Double[]{}));
+				
+		final RBridgeControl rBridge = RBridgeControl.getInstance();
 		rBridge.e("initTS()");
 		rBridge.assign("ts_history", values);
-		double[] pred = rBridge.eDblArr("getForecast(ts_history)");
+		final double[] pred = rBridge.eDblArr("getForecast(ts_history)");
 
 		tsFC.append(pred[0]);
-		return new SESForecastResult(tsFC);
+		return new ForecastResult<Double>(tsFC, this.getTsOriginal());
 	}
-
-
-
 }
 
 

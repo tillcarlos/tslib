@@ -1,10 +1,9 @@
 package com.tielefeld.tslib.forecast;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,43 +19,48 @@ public class MeanForecasterTest {
 	private int steps;
 	private MeanForecaster forecaster;
 	private IForecastResult<Double> forecast;
+	private final int confidenceLevel = 95; // 95%
 	private ITimeSeries<Double> forecastSeries;
+	private ITimeSeries<Double> upperSeries;
+	private ITimeSeries<Double> lowerSeries;
 	private long deltaTime;
 	private Double mean;
 
 	@Before
 	public void setUp() throws Exception {
-		deltaTime = 1000;
-		timeUnit = TimeUnit.MILLISECONDS;
-		startTime = new Date(System.currentTimeMillis() - deltaTime * 10);
+		this.deltaTime = 1000;
+		this.timeUnit = TimeUnit.MILLISECONDS;
+		this.startTime = new Date(System.currentTimeMillis() - this.deltaTime * 10);
 
-		initForecastWithTimeUnit(TimeUnit.MILLISECONDS);
+		this.initForecastWithTimeUnit(this.timeUnit);
 	}
 
 	/**
 	 * @param timeUnit
 	 * 
 	 */
-	private void initForecastWithTimeUnit(TimeUnit timeUnit) {
-		ts = new TimeSeries<Double>(startTime, deltaTime, timeUnit);
+	private void initForecastWithTimeUnit(final TimeUnit timeUnit) {
+		this.ts = new TimeSeries<Double>(this.startTime, this.deltaTime, timeUnit);
 
-		steps = 1;
-		mean = new Double(2.0);
-		ts.append(mean - 1);
-		ts.append(mean);
-		ts.append(mean + 1);
-		forecaster = new MeanForecaster(ts);
-		forecast = forecaster.forecast(steps);
-		forecastSeries = forecast.getForecast();
+		this.steps = 1;
+		this.mean = new Double(2.0);
+		this.ts.append(this.mean - 1);
+		this.ts.append(this.mean);
+		this.ts.append(this.mean + 1);
+		this.forecaster = new MeanForecaster(this.ts, this.confidenceLevel);
+		this.forecast = this.forecaster.forecast(this.steps);
+		this.forecastSeries = this.forecast.getForecast();
+		this.upperSeries = this.forecast.getUpper();
+		this.lowerSeries = this.forecast.getLower();
 	}
 
 	@Test
 	public void testForecastStartingIsAccordingToLastAppend() {
-		assertEquals(ts, forecaster.getHistoryTimeSeries());
+		Assert.assertEquals(this.ts, this.forecaster.getTsOriginal());
 
 		// we added three timepoints, so we must be here:
-		long expectedStartTime = startTime.getTime() + deltaTime * 4;
-		assertEquals(new Date(expectedStartTime), forecastSeries.getStartTime());
+		final long expectedStartTime = this.startTime.getTime() + this.deltaTime * 4;
+		Assert.assertEquals(new Date(expectedStartTime), this.forecastSeries.getStartTime());
 	}
 
 	/**
@@ -64,21 +68,40 @@ public class MeanForecasterTest {
 	 */
 	@Test
 	public void testForecastStartingIsAccordingToLastAppendDayTU() {
-		initForecastWithTimeUnit(TimeUnit.DAYS);
+		this.initForecastWithTimeUnit(TimeUnit.DAYS);
 
-		long expectedStartTime = startTime.getTime()
-				+ TimeUnit.MILLISECONDS.convert(deltaTime * 4, TimeUnit.DAYS);
-		assertEquals(new Date(expectedStartTime), forecastSeries.getStartTime());
+		final long expectedStartTime = this.startTime.getTime()
+				+ TimeUnit.MILLISECONDS.convert(this.deltaTime * 4, TimeUnit.DAYS);
+		Assert.assertEquals(new Date(expectedStartTime), this.forecastSeries.getStartTime());
 	}
 
 	@Test
 	public void testMeanCalculationOneStep() {
 
-		assertEquals(steps, forecastSeries.size());
+		Assert.assertEquals(this.steps, this.forecastSeries.size());
 
-		ITimeSeriesPoint<Double> stepFC = forecast.getForecast()
+		final ITimeSeriesPoint<Double> stepFC = this.forecast.getForecast()
 				.getPoints().get(0);
-		assertEquals(mean, stepFC.getValue());
+		Assert.assertEquals(this.mean, stepFC.getValue());
 	}
 
+	@Test
+	public void testLowerCalculationOneStep() {
+
+		Assert.assertEquals(this.steps, this.lowerSeries.size());
+
+		final ITimeSeriesPoint<Double> stepFC = this.forecast.getLower()
+				.getPoints().get(0);
+		Assert.assertTrue(this.mean > stepFC.getValue());
+	}
+	
+	@Test
+	public void testUpperCalculationOneStep() {
+
+		Assert.assertEquals(this.steps, this.upperSeries.size());
+
+		final ITimeSeriesPoint<Double> stepFC = this.forecast.getUpper()
+				.getPoints().get(0);
+		Assert.assertTrue(this.mean < stepFC.getValue());
+	}
 }

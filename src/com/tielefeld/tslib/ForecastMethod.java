@@ -3,7 +3,7 @@ package com.tielefeld.tslib;
 import com.tielefeld.tslib.anomalycalculators.IAnomalyCalculator;
 import com.tielefeld.tslib.anomalycalculators.SimpleAnomalyCalculator;
 import com.tielefeld.tslib.forecast.IForecaster;
-import com.tielefeld.tslib.forecast.mean.MeanForecaster;
+import com.tielefeld.tslib.forecast.mean.MeanForecasterJava;
 
 public enum ForecastMethod {
 	MEAN;
@@ -11,9 +11,9 @@ public enum ForecastMethod {
 	public IForecaster<Double> getForecaster(ITimeSeries<Double> history) {
 		switch (this) {
 		case MEAN:
-			return new MeanForecaster(history);
+			return new MeanForecasterJava(history);
 		default:
-			return new MeanForecaster(history);
+			return new MeanForecasterJava(history);
 		}
 	}
 
