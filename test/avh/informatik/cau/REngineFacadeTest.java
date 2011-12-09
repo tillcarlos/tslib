@@ -9,7 +9,7 @@ import org.rosuda.JRI.REXP;
 import org.rosuda.REngine.JRI.JRIEngine;
 
 public class REngineFacadeTest {
-    private static final Log log = LogFactory.getLog(REngineFacadeTest.class);
+    private static final Log LOG = LogFactory.getLog(REngineFacadeTest.class);
 
 	private REngineFacade r;
 

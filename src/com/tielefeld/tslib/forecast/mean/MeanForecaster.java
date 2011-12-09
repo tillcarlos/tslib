@@ -20,7 +20,9 @@ public class MeanForecaster extends AbstractForecaster<Double> {
 		// For now, do the calculation in Java here
 		double sum = 0.0;
 		for (ITimeSeriesPoint<Double> point : history.getPoints()) {
-			sum += point.getValue();
+			Double val = point.getValue();
+			if (null != val)
+				sum += val;
 		}
 		double mean = sum / history.size();
 		for (int i = 0; i < numForecastSteps; i++) {
