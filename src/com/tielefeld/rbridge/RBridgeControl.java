@@ -122,6 +122,7 @@ public class RBridgeControl {
 		
 	}
 
+	// TODO DRY violated!
 	public void assign(final String variable, final Double[] values) {
 		try {
 			final StringBuffer buf = new StringBuffer();
@@ -133,7 +134,7 @@ public class RBridgeControl {
 				} else {
 					first = false;
 				}
-				if (null == item) {
+				if (null == item || item.isNaN()) {
 					buf.append("NA");
 				} else {
 					buf.append(item);
