@@ -5,10 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.collections.buffer.BoundedFifoBuffer;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
-
-import sun.misc.Queue;
 
 /**
  * 
@@ -17,8 +14,6 @@ import sun.misc.Queue;
  * @param <T>
  */
 public class TimeSeries<T> implements ITimeSeries<T> {
-	public static final int INFINITE_CAPACITY = -1;
-
 	private final Date startTime;
 	private final Date nextTime;
 	private final long deltaTime;
@@ -45,7 +40,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 		this.oneStepMillis = TimeUnit.MILLISECONDS.convert(this.deltaTime,
 				this.deltaTimeUnit);
 
-		if (TimeSeries.INFINITE_CAPACITY == capacity) {
+		if (ITimeSeries.INFINITE_CAPACITY == capacity) {
 			this.points = new CircularFifoBuffer();
 		} else {
 			this.points = new CircularFifoBuffer(this.capacity);
@@ -58,7 +53,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 
 	public TimeSeries(final Date startTime, final long deltaTime,
 			final TimeUnit deltaTimeUnit) {
-		this(startTime, deltaTime, deltaTimeUnit, TimeSeries.INFINITE_CAPACITY);
+		this(startTime, deltaTime, deltaTimeUnit, ITimeSeries.INFINITE_CAPACITY);
 	}
 
 	/**
@@ -94,7 +89,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 	 * 
 	 */
 	private void setNextTime() {
-		this.nextTime.setTime(this.nextTime.getTime() + oneStepMillis);
+		this.nextTime.setTime(this.nextTime.getTime() + this.oneStepMillis);
 	}
 
 	@Override
@@ -102,9 +97,17 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 		return new ArrayList<ITimeSeriesPoint<T>>(this.points);
 	}
 
-	/**
-	 * @return the capacity
-	 */
+	@Override
+	public List<T> getValues() {
+		final List<ITimeSeriesPoint<T>> pointsCopy = this.getPoints();
+		final List<T> retVals = new ArrayList<T>(pointsCopy.size());
+		for (final ITimeSeriesPoint<T> curPoint : pointsCopy) {
+			retVals.add(curPoint.getValue());
+		}
+		
+		return retVals;
+	}
+	
 	@Override
 	public int getCapacity() {
 		return this.capacity;
@@ -117,7 +120,18 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 
 	@Override
 	public Date getEndTime() {
-		return new Date(this.getStartTime().getTime() + oneStepMillis
+		return new Date(this.getStartTime().getTime() + this.oneStepMillis
 				* this.size());
+	}
+
+	@Override
+	public List<ITimeSeriesPoint<T>> appendAll(final T[] values) {
+		final List<ITimeSeriesPoint<T>> retVals = new ArrayList<ITimeSeriesPoint<T>>(values.length);
+		
+		for (final T value : values) {
+			retVals.add(this.append(value));		
+		}
+		
+		return retVals;
 	}
 }

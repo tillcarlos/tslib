@@ -18,8 +18,24 @@ public class ForecastResult<T> implements IForecastResult<T> {
 	}
 	
 	@Override
-	public ITimeSeries<T> getForecastTimeSeries() {
+	public ITimeSeries<T> getForecast() {
 		return this.forecastSeries;
+	}
+
+	@Override
+	public double getConfidenceLevel() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public ITimeSeries<T> getUpper() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ITimeSeries<T> getLower() {
+		throw new UnsupportedOperationException();
 	}
 }
  

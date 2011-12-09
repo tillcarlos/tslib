@@ -34,7 +34,7 @@ public class SESRForecasterTest {
 
 		SESRForecaster forecaster = new SESRForecaster(ts);
 		IForecastResult<Double> forecast = forecaster.forecast(1);
-		ITimeSeries<Double> forecastSeries = forecast.getForecastTimeSeries();
+		ITimeSeries<Double> forecastSeries = forecast.getForecast();
 
 		ITimeSeriesPoint<Double> stepFC = forecastSeries.getPoints().get(0);
 		assertTrue(stepFC.getValue() > 2.88 && stepFC.getValue() < 3.1);
