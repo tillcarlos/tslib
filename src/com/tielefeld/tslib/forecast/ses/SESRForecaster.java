@@ -1,7 +1,5 @@
 package com.tielefeld.tslib.forecast.ses;
 
-import java.util.List;
-
 import com.tielefeld.rbridge.RBridgeControl;
 import com.tielefeld.tslib.ITimeSeries;
 import com.tielefeld.tslib.ITimeSeriesPoint;

@@ -1,5 +1,6 @@
 package com.tielefeld.rbridge;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -46,7 +47,8 @@ public class RBridgeControl {
 			// TODO outsource this into a packaged text file, declare the
 			// functions at runtime
 			// TODO use REngine rather? RServe is not needed any more
-			INSTANCE.e("source('~/Documents/repositories/uni/thesis-repos/Opad4lsssExperiments/opad4lsss_r/opad_functions.r')");
+			
+			INSTANCE.e("source('"+new File("opad4lsss_r/opad_functions.r").getAbsoluteFile()+"')");
 			INSTANCE.e("library('logging')");
 			INSTANCE.e("initOPADfunctions()");
 		}
