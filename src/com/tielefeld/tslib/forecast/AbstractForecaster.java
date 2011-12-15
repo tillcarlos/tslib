@@ -8,35 +8,47 @@ import com.tielefeld.tslib.TimeSeries;
 
 public abstract class AbstractForecaster<T> implements IForecaster<T> {
 	private final ITimeSeries<T> historyTimeseries;
-
+	private final int confidenceLevel;
+	
 	/**
 	 * @param historyTimeseries
 	 */
 	public AbstractForecaster(final ITimeSeries<T> historyTimeseries) {
-		this.historyTimeseries = historyTimeseries;
+		this(historyTimeseries, 0);
 	}
 
+	public AbstractForecaster(final ITimeSeries<T> historyTimeseries, final int confidenceLevel) {
+		this.historyTimeseries = historyTimeseries;
+		this.confidenceLevel = confidenceLevel;
+	}
+	
+	
 	/**
 	 * @return the historyTimeseries
 	 */
 	@Override
-	public ITimeSeries<T> getHistoryTimeSeries() {
+	public ITimeSeries<T> getTsOriginal() {
 		return this.historyTimeseries;
 	}
 
 	protected ITimeSeries<T> prepareForecastTS() {
-		ITimeSeries<T> history = this.getHistoryTimeSeries();
+		final ITimeSeries<T> history = this.getTsOriginal();
 
 		// The starting point of the FC series is calculated by _one_ additional
 		// tick...
-		long lastDistanceMillis = TimeUnit.MILLISECONDS.convert(
+		final long lastDistanceMillis = TimeUnit.MILLISECONDS.convert(
 				history.getDeltaTime(), history.getDeltaTimeUnit());
 		// ... plus the end point of the historic series
-		Date startTime = new Date(history.getEndTime().getTime()
+		final Date startTime = new Date(history.getEndTime().getTime()
 				+ lastDistanceMillis);
-		TimeSeries<T> tsFC = new TimeSeries<T>(startTime,
+		final TimeSeries<T> tsFC = new TimeSeries<T>(startTime,
 				history.getDeltaTime(), history.getDeltaTimeUnit());
 
 		return tsFC;
+	}
+
+	@Override
+	public int getConfidenceLevel() {
+		return this.confidenceLevel;
 	}
 }

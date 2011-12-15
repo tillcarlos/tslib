@@ -1,13 +1,13 @@
 package com.tielefeld.rbridge;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
-
-import avh.informatik.cau.REngineFacadeTest;
 
 public class RBridgeTest {
 	private static final Log LOG = LogFactory.getLog(RBridgeTest.class);
@@ -19,7 +19,7 @@ public class RBridgeTest {
 	@Test
 	public void test() {
 
-		RBridgeControl r = RBridgeControl.getInstance();
+		RBridgeControl r = RBridgeControl.getInstance(new File("."));
 
 		r.e("measures <<- c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,31.0,41.0,95.0,77.0,29.0,62.0,49.0,NA)");
 		r.e("forecasts <<- c(NA,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.8181818181818183,6.0,12.846153846153847,17.428571428571427,18.2,20.9375,22.58823529411765)");

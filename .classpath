@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/Rsession.jar"/>
 	<classpathentry kind="lib" path="lib/Rserve.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="build-eclipse"/>
 </classpath>

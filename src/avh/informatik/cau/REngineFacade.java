@@ -114,7 +114,7 @@ public class REngineFacade {
         this.jobQueue.shutdown();
         this.rEngine.end();
     }
-
+    
     /**
      * Asynchronous execution of the passed R command.
      * This method returns immediately. The result is passed to the

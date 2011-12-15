@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,8 +12,6 @@ import org.math.R.Rsession;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.REXPVector;
-
-import com.tielefeld.tslib.ITimeSeriesPoint;
 
 public class RBridgeControl {
 
@@ -26,10 +25,10 @@ public class RBridgeControl {
 	private RBridgeControl() {
 
 		// disable all the output
-		PrintStream nullPrintStream = new PrintStream(new OutputStream() {
+		final PrintStream nullPrintStream = new PrintStream(new OutputStream() {
 
 			@Override
-			public void write(int arg0) throws IOException {
+			public void write(final int arg0) throws IOException {
 			}
 		});
 
@@ -38,22 +37,22 @@ public class RBridgeControl {
 
 	}
 
-	public static RBridgeControl getInstance() {
-		if (null == INSTANCE) {
+	public static RBridgeControl getInstance(File root) {
+		if (null == RBridgeControl.INSTANCE) {
 
-			INSTANCE = new RBridgeControl();
-			INSTANCE.e("OPAD_CONTEXT <<- TRUE");
+			RBridgeControl.INSTANCE = new RBridgeControl();
+			RBridgeControl.INSTANCE.e("OPAD_CONTEXT <<- TRUE");
 			// TODO: test if this is needed every time
 			// TODO outsource this into a packaged text file, declare the
 			// functions at runtime
 			// TODO use REngine rather? RServe is not needed any more
 			
-			INSTANCE.e("source('"+new File("opad4lsss_r/opad_functions.r").getAbsoluteFile()+"')");
+			INSTANCE.e("source('"+new File(root, "r_scripts/opad_functions.r").getAbsoluteFile()+"')");
 			INSTANCE.e("library('logging')");
 			INSTANCE.e("initOPADfunctions()");
 		}
 
-		return INSTANCE;
+		return RBridgeControl.INSTANCE;
 	}
 
 	/**
@@ -62,54 +61,54 @@ public class RBridgeControl {
 	 * @param input
 	 * @return
 	 */
-	public Object e(String input) {
+	public Object e(final String input) {
 		Object out = null;
 		try {
 			out = this.rCon.eval(input);
-			 LOG.info("> REXP: " + input + " return: " + out);
-		} catch (Exception exc) {
-			LOG.error("Error R expr.: " + input + " Cause: " + exc);
+			 RBridgeControl.LOG.info("> REXP: " + input + " return: " + out);
+		} catch (final Exception exc) {
+			RBridgeControl.LOG.error("Error R expr.: " + input + " Cause: " + exc);
 			exc.printStackTrace();
 		}
 		return out;
 	}
 
-	public double eDbl(String input) {
+	public double eDbl(final String input) {
 		try {
 			// TODO make it error save
-			return ((REXPDouble) e(input)).asDouble();
-		} catch (Exception exc) {
-			LOG.error("Error casting value from R: " + input + " Cause: " + exc);
+			return ((REXPDouble) this.e(input)).asDouble();
+		} catch (final Exception exc) {
+			RBridgeControl.LOG.error("Error casting value from R: " + input + " Cause: " + exc);
 			return -666.666;
 		}
 	}
 
-	public String eString(String input) {
+	public String eString(final String input) {
 		try {
 			// TODO make it error save
-			REXPString str = (REXPString) e(input);
+			final REXPString str = (REXPString) this.e(input);
 			return str.toString();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return "";
 		}
 	}
 
-	public double[] eDblArr(String input) {
+	public double[] eDblArr(final String input) {
 		try {
 			// TODO make it error save
-			REXPVector res = (REXPVector) e(input);
+			final REXPVector res = (REXPVector) this.e(input);
 			return res.asDoubles();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return new double[0];
 		}
 	}
 	
-	public void assign(String variable, double[] values) {
+	public void assign(final String variable, final double[] values) {
 		try {
-			StringBuffer buf = new StringBuffer();
+			final StringBuffer buf = new StringBuffer();
 			buf.append(variable + " <<- c(");
 			boolean first = true;
-			for (double item : values) {
+			for (final double item : values) {
 				if (!first) {
 					buf.append(",");
 				} else {
@@ -119,19 +118,19 @@ public class RBridgeControl {
 			}
 			buf.append(")");
 			this.e(buf.toString());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 		
 	}
 
 	// TODO DRY violated!
-	public void assign(String variable, Double[] values) {
+	public void assign(final String variable, final Double[] values) {
 		try {
-			StringBuffer buf = new StringBuffer();
+			final StringBuffer buf = new StringBuffer();
 			buf.append(variable + " <<- c(");
 			boolean first = true;
-			for (Double item : values) {
+			for (final Double item : values) {
 				if (!first) {
 					buf.append(",");
 				} else {
@@ -145,14 +144,23 @@ public class RBridgeControl {
 			}
 			buf.append(")");
 			this.e(buf.toString());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 				
 	}
-
 	
-
+    private final static AtomicInteger nextVarId = new AtomicInteger(1);
+    
+    /**
+     * Returns a globally unique variable name. 
+     * 
+     * @param prefix may be null
+     * @return
+     */
+    public static String uniqueVarname () {
+    	return String.format("var_%s", RBridgeControl.nextVarId.getAndIncrement());
+    }
 }
 
 
