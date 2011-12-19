@@ -13,11 +13,11 @@ import com.tielefeld.tslib.forecast.ForecastResult;
 import com.tielefeld.tslib.forecast.IForecastResult;
 
 /**
- * A Java-based time series forecaster which computes a forecast based 
- * on the mean value of the historic values.
+ * A Java-based time series forecaster which computes a forecast based on the
+ * mean value of the historic values.
  * 
  * @author Andre van Hoorn
- *
+ * 
  */
 public class MeanForecasterJava extends AbstractForecaster<Double> {
 
@@ -31,8 +31,7 @@ public class MeanForecasterJava extends AbstractForecaster<Double> {
 		final ITimeSeries<Double> tsFC = this.prepareForecastTS();
 		
 		List<Double> allHistory = new ArrayList<Double>(history.getValues());
-		allHistory.remove(null);
-		Double[] histValuesNotNull = allHistory.toArray(new Double[]{});
+		Double[] histValuesNotNull = MeanForecasterJava.removeNullValues(allHistory); 
 		final double mean = StatUtils.mean(ArrayUtils.toPrimitive(histValuesNotNull));
 		
 		final Double[] forecastValues = new Double[numForecastSteps];
@@ -43,5 +42,14 @@ public class MeanForecasterJava extends AbstractForecaster<Double> {
 		// TODO: computer confidence interval and set this value along with upper and lower time series
 		
 		return new ForecastResult<Double>(tsFC, this.getTsOriginal());
+	}
+
+	private static Double[] removeNullValues(List<Double> allHistory) {
+		List<Double> newList = new ArrayList<Double>();
+		for (Object obj : allHistory) {
+			if (null != obj && obj instanceof Double)
+				newList.add((Double)obj);
+		}
+		return newList.toArray(new Double[] {});
 	}
 }
