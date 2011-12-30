@@ -46,7 +46,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 			this.points = new CircularFifoBuffer(this.capacity);
 		}
 		
-		this.nextTime = new Date();
+		this.nextTime = startTime;
 		this.setNextTime();
 	}
 	

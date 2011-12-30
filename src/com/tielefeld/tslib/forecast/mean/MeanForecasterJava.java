@@ -44,7 +44,7 @@ public class MeanForecasterJava extends AbstractForecaster<Double> {
 		return new ForecastResult<Double>(tsFC, this.getTsOriginal());
 	}
 
-	private static Double[] removeNullValues(List<Double> allHistory) {
+	public static Double[] removeNullValues(List<Double> allHistory) {
 		List<Double> newList = new ArrayList<Double>();
 		for (Object obj : allHistory) {
 			if (null != obj && obj instanceof Double)

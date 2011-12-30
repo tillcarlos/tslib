@@ -1,5 +1,6 @@
 package com.tielefeld.rbridge;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,46 +11,78 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.math.R.Rsession;
 import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.REXPVector;
 
 public class RBridgeControl {
 
 	private static final Log LOG = LogFactory.getLog(RBridgeControl.class);
+	private static final Log RSERVELOG = LogFactory.getLog("RSERVE");
 
 	Rsession rCon;
 
 	// TODO make a better singleton, later
 	public static RBridgeControl INSTANCE = null;
 
-	private RBridgeControl() {
+	private RBridgeControl(boolean silent) {
 
-		// disable all the output
-		final PrintStream nullPrintStream = new PrintStream(new OutputStream() {
+		OutputStream out = System.out;
 
-			@Override
-			public void write(final int arg0) throws IOException {
-			}
-		});
+		if (true == silent) {
+			out = new OutputStream() {
 
-		// this.rCon = Rsession.newLocalInstance(System.out, null);
-		this.rCon = Rsession.newLocalInstance(nullPrintStream, null);
+				@Override
+				public void write(final int arg0) throws IOException {
+				}
+			};
+		} else {
+			out = new OutputStream() {
 
+				private int lineEnd = (int) '\n';
+				private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+				@Override
+				public void write(int b) throws IOException {
+					if (b == lineEnd) {
+						RSERVELOG.info(baos.toString());
+						baos.reset();
+					} else 
+						baos.write(b);
+				}
+
+			};
+		}
+
+		this.rCon = Rsession.newLocalInstance(new PrintStream(out), null);
 	}
 
 	public static RBridgeControl getInstance(File root) {
 		if (null == RBridgeControl.INSTANCE) {
 
-			RBridgeControl.INSTANCE = new RBridgeControl();
+			// TODO make this configurabe?!?
+			RBridgeControl.INSTANCE = new RBridgeControl(false);
 			RBridgeControl.INSTANCE.e("OPAD_CONTEXT <<- TRUE");
 			// TODO: test if this is needed every time
 			// TODO outsource this into a packaged text file, declare the
 			// functions at runtime
 			// TODO use REngine rather? RServe is not needed any more
-			
-			INSTANCE.e("source('"+new File(root, "r_scripts/opad_functions.r").getAbsoluteFile()+"')");
-			INSTANCE.e("library('logging')");
-			INSTANCE.e("initOPADfunctions()");
+
+			INSTANCE.e("setwd('" + root.getAbsolutePath() + "')");
+			// RBridgeControl.INSTANCE
+			// .e("sink(file = 'rsink.log', append = TRUE, type = c('output', 'message'),split = FALSE)");
+			// INSTANCE.e("source('includes.r', local = FALSE, echo = TRUE)");
+			INSTANCE.e("source('plotting2.r', local = FALSE, echo = TRUE)");
+			INSTANCE.e("initTS");
+
+			// INSTANCE.e("print( getwd() )");
+			// INSTANCE.e("source('basic.r', local = FALSE, echo = TRUE)");
+			// INSTANCE.e("dprint('from opad') ");
+			// INSTANCE.e("source('plotting.r', local = FALSE, echo = TRUE)");
+			// INSTANCE.e("source('opad_functions.r', echo = TRUE, verbose = TRUE)");
+			// INSTANCE.e("source('plotting.r', echo = TRUE, verbose = TRUE)");
+			// INSTANCE.e("library('logging')");
+			// INSTANCE.e("initOPADfunctions()");
 		}
 
 		return RBridgeControl.INSTANCE;
@@ -65,9 +98,19 @@ public class RBridgeControl {
 		Object out = null;
 		try {
 			out = this.rCon.eval(input);
-			 RBridgeControl.LOG.info("> REXP: " + input + " return: " + out);
+
+			Object output = out;
+
+			if (out instanceof REXPString)
+				output = ((REXPString) out).asString();
+			if (out instanceof REXPLogical)
+				output = ((REXPLogical) out).toDebugString();
+
+			RBridgeControl.LOG.info("> REXP: " + input + " return: " + output);
+
 		} catch (final Exception exc) {
-			RBridgeControl.LOG.error("Error R expr.: " + input + " Cause: " + exc);
+			RBridgeControl.LOG.error("Error R expr.: " + input + " Cause: "
+					+ exc);
 			exc.printStackTrace();
 		}
 		return out;
@@ -78,7 +121,8 @@ public class RBridgeControl {
 			// TODO make it error save
 			return ((REXPDouble) this.e(input)).asDouble();
 		} catch (final Exception exc) {
-			RBridgeControl.LOG.error("Error casting value from R: " + input + " Cause: " + exc);
+			RBridgeControl.LOG.error("Error casting value from R: " + input
+					+ " Cause: " + exc);
 			return -666.666;
 		}
 	}
@@ -102,7 +146,7 @@ public class RBridgeControl {
 			return new double[0];
 		}
 	}
-	
+
 	public void assign(final String variable, final double[] values) {
 		try {
 			final StringBuffer buf = new StringBuffer();
@@ -121,7 +165,7 @@ public class RBridgeControl {
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	// TODO DRY violated!
@@ -147,22 +191,41 @@ public class RBridgeControl {
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
-				
+
 	}
-	
-    private final static AtomicInteger nextVarId = new AtomicInteger(1);
-    
-    /**
-     * Returns a globally unique variable name. 
-     * 
-     * @param prefix may be null
-     * @return
-     */
-    public static String uniqueVarname () {
-    	return String.format("var_%s", RBridgeControl.nextVarId.getAndIncrement());
-    }
+
+	public void assign(final String variable, final Long[] values) {
+		try {
+			final StringBuffer buf = new StringBuffer();
+			buf.append(variable + " <<- c(");
+			boolean first = true;
+			for (final Long item : values) {
+				if (!first) {
+					buf.append(",");
+				} else {
+					first = false;
+				}
+				buf.append(item);
+			}
+			buf.append(")");
+			this.e(buf.toString());
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private final static AtomicInteger nextVarId = new AtomicInteger(1);
+
+	/**
+	 * Returns a globally unique variable name.
+	 * 
+	 * @param prefix
+	 *            may be null
+	 * @return
+	 */
+	public static String uniqueVarname() {
+		return String.format("var_%s",
+				RBridgeControl.nextVarId.getAndIncrement());
+	}
 }
-
-
-
-

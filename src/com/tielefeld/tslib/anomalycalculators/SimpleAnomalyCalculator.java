@@ -10,6 +10,9 @@ public class SimpleAnomalyCalculator implements IAnomalyCalculator<Double> {
 	public AnomalyScore calculateAnomaly(IForecastResult<Double> forecast,
 			ITimeSeriesPoint<Double> current) {
 		// TODO Auto-generated method stub
+		if (forecast.getForecast().getPoints().size() == 0)
+			return null;
+		
 		Double nextpredicted = forecast.getForecast().getPoints().get(0).getValue();
 		double measuredValue = 0.0;
 		
