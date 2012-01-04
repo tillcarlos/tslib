@@ -17,7 +17,7 @@ public abstract class AbstractRForecaster extends AbstractForecaster<Double> {
 	/**
 	 * Acquire an instance of the {@link RBridgeControl} once
 	 */
-	private final static RBridgeControl rBridge = RBridgeControl.getInstance(new File("."));
+	private final static RBridgeControl rBridge = RBridgeControl.getInstance(new File("r_scripts"));
 	static {
 		AbstractRForecaster.rBridge.e("require(forecast)");
 	}
