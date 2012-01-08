@@ -1,11 +1,15 @@
 package com.tielefeld.tslib.forecast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.tielefeld.rbridge.RBridgeControl;
 import com.tielefeld.tslib.ITimeSeries;
+import com.tielefeld.tslib.forecast.mean.MeanForecasterJava;
 
 /**
  * Convenience class to implement an {@link IForecaster} with R.
@@ -47,8 +51,12 @@ public abstract class AbstractRForecaster extends AbstractForecaster<Double> {
 		final String varNameModel = RBridgeControl.uniqueVarname();
 		final String varNameForecast = RBridgeControl.uniqueVarname();
 
-		final double[] values = ArrayUtils.toPrimitive(history.getValues().toArray(new Double[] {}));
+		//final double[] values = ArrayUtils.toPrimitive(history.getValues().toArray(new Double[] {}));
 
+		List<Double> allHistory = new ArrayList<Double>(history.getValues());
+		Double[] histValuesNotNull = MeanForecasterJava.removeNullValues(allHistory); 
+		final double[] values = ArrayUtils.toPrimitive(histValuesNotNull);
+		
 		/*
 		 * 0. Assign values to temporal variable
 		 */
@@ -62,8 +70,16 @@ public abstract class AbstractRForecaster extends AbstractForecaster<Double> {
 			AbstractRForecaster.rBridge.assign(varNameModel, values);
 		} else {
 			final String[] additionalModelParams = this.getModelFuncParams();
-			// TODO: append additionalModelParams to call
-			AbstractRForecaster.rBridge.e(String.format("%s<<-%s(%s)", varNameModel, this.modelFunc, varNameValues));
+			
+			StringBuffer params = new StringBuffer();
+			params.append(varNameValues);
+			if (null != additionalModelParams) {
+				for (String param : additionalModelParams) {
+					params.append(",");
+					params.append(param);
+				}
+			}
+			AbstractRForecaster.rBridge.e(String.format("%s<<-%s(%s)", varNameModel, this.modelFunc, params));
 		}
 		// remove temporal variable:
 		AbstractRForecaster.rBridge.e(String.format("rm(%s)", varNameValues));
@@ -80,9 +96,9 @@ public abstract class AbstractRForecaster extends AbstractForecaster<Double> {
 
 		// final double mean = MeanForecasterR.rBridge.eDbl(String.format("mean(c(%s))", varNameValues));
 
-		final double[] lowerValues = AbstractRForecaster.rBridge.eDblArr(String.format("%s$lower", varNameForecast));
-		final double[] forecastValues = AbstractRForecaster.rBridge.eDblArr(String.format("%s$mean", varNameForecast));
-		final double[] upperValues = AbstractRForecaster.rBridge.eDblArr(String.format("%s$upper", varNameForecast));
+		final double[] lowerValues = AbstractRForecaster.rBridge.eDblArr(lowerOperationOnResult(varNameForecast));
+		final double[] forecastValues = AbstractRForecaster.rBridge.eDblArr(forecastOperationOnResult(varNameForecast));
+		final double[] upperValues = AbstractRForecaster.rBridge.eDblArr(upperOperationOnResult(varNameForecast));
 		AbstractRForecaster.rBridge.e(String.format("rm(%s)", varNameForecast));
 
 		
@@ -102,6 +118,29 @@ public abstract class AbstractRForecaster extends AbstractForecaster<Double> {
 		}
 		
 		return new ForecastResult<Double>(tsForecast, this.getTsOriginal(),this.getConfidenceLevel(), tsLower, tsUpper);
+	}
+
+	/**
+	 * @param varNameForecast
+	 * @return
+	 */
+	protected String lowerOperationOnResult(final String varNameForecast) {
+		return String.format("%s$lower", varNameForecast);
+	}
+	/**
+	 * @param varNameForecast
+	 * @return
+	 */
+	protected String upperOperationOnResult(final String varNameForecast) {
+		return String.format("%s$upper", varNameForecast);
+	}
+
+	/**
+	 * @param varNameForecast
+	 * @return
+	 */
+	protected String forecastOperationOnResult(final String varNameForecast) {
+		return String.format("%s$mean", varNameForecast);
 	}
 
 	/**
