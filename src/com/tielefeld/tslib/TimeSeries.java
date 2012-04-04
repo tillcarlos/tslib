@@ -33,7 +33,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 	 */
 	public TimeSeries(final Date startTime, final long deltaTime,
 			final TimeUnit deltaTimeUnit, final int capacity) {
-		this.startTime = new Date(startTime.getTime());
+		this.startTime = (Date) startTime.clone();
 		this.deltaTime = deltaTime;
 		this.deltaTimeUnit = deltaTimeUnit;
 		this.capacity = capacity;
@@ -46,7 +46,7 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 			this.points = new CircularFifoBuffer(this.capacity);
 		}
 		
-		this.nextTime = this.startTime;
+		this.nextTime = (Date) this.startTime.clone();
 		this.setNextTime();
 	}
 	
@@ -134,4 +134,18 @@ public class TimeSeries<T> implements ITimeSeries<T> {
 		
 		return retVals;
 	}
+
+
+	@Override
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Time Series with delta: " + this.deltaTime + " " + this.deltaTimeUnit + " starting at: " + this.getStartTime());
+		for (final ITimeSeriesPoint<T> curPoint : this.getPoints()) {
+			buf.append(curPoint);
+		}
+		
+		return buf.toString();
+	}
+	
+	
 }

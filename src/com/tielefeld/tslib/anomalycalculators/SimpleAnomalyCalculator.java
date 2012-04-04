@@ -9,11 +9,13 @@ public class SimpleAnomalyCalculator implements IAnomalyCalculator<Double> {
 	@Override
 	public AnomalyScore calculateAnomaly(IForecastResult<Double> forecast,
 			ITimeSeriesPoint<Double> current) {
-		// TODO Auto-generated method stub
 		if (forecast.getForecast().getPoints().size() == 0)
 			return null;
 		
 		Double nextpredicted = forecast.getForecast().getPoints().get(0).getValue();
+		if (null == nextpredicted)
+			return null;
+		
 		double measuredValue = 0.0;
 		
 		// TODO how to do the fancy generic cast / check?

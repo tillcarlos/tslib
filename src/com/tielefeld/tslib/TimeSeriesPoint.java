@@ -12,7 +12,8 @@ public class TimeSeriesPoint<T> implements ITimeSeriesPoint<T> {
 	 * @param value
 	 */
 	public TimeSeriesPoint(final Date time, final T value) {
-		this.time = time;
+		// TODO is that a good pattern or should we ensure that the object is immutable from outside?
+		this.time = (Date) time.clone();
 		this.value = value;
 	}
 
@@ -25,5 +26,12 @@ public class TimeSeriesPoint<T> implements ITimeSeriesPoint<T> {
 	public T getValue() {
 		return this.value;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return "[" + this.getTime() + "=" + this.getValue() + "]";
+	}
+	
 
 }

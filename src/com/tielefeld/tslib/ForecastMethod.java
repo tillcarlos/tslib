@@ -7,9 +7,10 @@ import com.tielefeld.tslib.forecast.arima.ARIMA101Forecaster;
 import com.tielefeld.tslib.forecast.ets.ETSForecaster;
 import com.tielefeld.tslib.forecast.mean.MeanForecasterJava;
 import com.tielefeld.tslib.forecast.ses.SESRForecaster;
+import com.tielefeld.tslib.forecast.windowstart.WindowStartForecaster;
 
 public enum ForecastMethod {
-	MEAN, SES, ETS, ARIMA101;
+	MEAN, SES, ETS, ARIMA101, WINDOWSTART;
 
 	public IForecaster<Double> getForecaster(ITimeSeries<Double> history) {
 		switch (this) {
@@ -21,6 +22,8 @@ public enum ForecastMethod {
 			return new MeanForecasterJava(history);
 		case ARIMA101:
 			return new ARIMA101Forecaster(history);
+		case WINDOWSTART:
+			return new WindowStartForecaster(history);
 		default:
 			return new MeanForecasterJava(history);
 		}
