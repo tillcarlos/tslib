@@ -7,3 +7,9 @@ bin/classes
 *.class
 
 
+build-eclipse
+build
+dist
+bin
+tmp
+

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Opad4lsssExperiments" default="build-all" basedir=".">
-    <property file="build.xml.properties"/>
+    <property file="build.properties"/>
     
     <!-- Compile classpaths used for javac and javadoc -->
     <target name="init-classpaths">
@@ -93,7 +93,10 @@
     <target name="build-tslib" depends="clean, init">
         
         <!-- compile all sources
-        (TODO: workaround as long as there is a (cyclic) dependency between meta-model and framework) -->
+        (TODO: workaround as long as there is a (cyclic) dependency between meta-model and framework) 
+		-->
+		<echo>Building...${line.separator} -> build main dir: ${tslib.build.main.dir}</echo>
+		
         <javac destDir="${tslib.build.main.dir}" source="1.5" debug="true" classpathref="compile-classpath" includeantruntime="false">
             <!--<src path="${tslib.src-gen.dir}"/>-->
             <src path="${tslib.src.dir}"/>
